@@ -2,7 +2,7 @@
 import http.server
 import socketserver
 import os
-from datetime import datetime
+import time
 
 #print('source code for "http.server":', http.server.__file__)
 
@@ -16,11 +16,11 @@ class web_server(http.server.SimpleHTTPRequestHandler):
             self.protocol_version = 'HTTP/1.1'
             self.send_response(200)
             self.send_header("Content-type", "text/html; charset=UTF-8")
-            self.end_headers()            
+            self.end_headers()
+            t = time.localtime()
+            timeS = time.strftime("%H:%M:%S", t)
             self.wfile.write(b"Hello World!\n")
-            now = datetime.now()
-            current_time = now.strftime("%H:%M:%S")
-            self.wfile.write(current_time)
+            self.wfile.write(b"\n" + timeS.encode("utf-8"))
         else:
             super().do_GET()
     
