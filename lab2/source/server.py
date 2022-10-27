@@ -27,11 +27,14 @@ class web_server(http.server.SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "text/html; charset=UTF-8")
             self.end_headers()
-            if parameter = 'time'
+            if parameter == 'time':
                 t = time.localtime()
                 timeS = time.strftime("%H:%M:%S", t)
-                self.wfile.write(b"\n" + timeS.encode("utf-8"))
-            self.wfile.write(parameter.encode("utf-8"))
+                self.wfile.write(timeS.encode("utf-8"))
+            elif parameter.startswith('rev&str='):
+                str = parameter[8:]
+                str = str[::-1]
+                self.wfile.write(str.encode("utf-8"))
         else:
             super().do_GET()
     
