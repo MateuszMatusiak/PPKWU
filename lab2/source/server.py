@@ -5,7 +5,7 @@ import os
 import time
 
 #print('source code for "http.server":', http.server.__file__)
-#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
+
 class web_server(http.server.SimpleHTTPRequestHandler):
     
     def do_GET(self):
