@@ -5,7 +5,7 @@ import os
 import time
 
 #print('source code for "http.server":', http.server.__file__)
-
+#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
 class web_server(http.server.SimpleHTTPRequestHandler):
     
     def do_GET(self):
@@ -27,6 +27,10 @@ class web_server(http.server.SimpleHTTPRequestHandler):
             self.send_response(200)
             self.send_header("Content-type", "text/html; charset=UTF-8")
             self.end_headers()
+            if parameter = 'time'
+                t = time.localtime()
+                timeS = time.strftime("%H:%M:%S", t)
+                self.wfile.write(b"\n" + timeS.encode("utf-8"))
             self.wfile.write(parameter.encode("utf-8"))
         else:
             super().do_GET()
