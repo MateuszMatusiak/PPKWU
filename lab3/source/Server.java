@@ -27,5 +27,49 @@ public class Server {
 		}
 	}
 
+	public static String calculateString(String text) {
+		int lowercase = 0;
+		int uppercase = 0;
+		int digits = 0;
+		int special = 0;
 
+		char[] arr = text.toCharArray();
+		for(char c : arr) {
+			if(Character.isLowerCase(c)){
+				lowercase++;
+			}else if(Character.isUpperCase(c)){
+				uppercase++;
+			}else if(Character.isDigit(c)){
+				digits++;
+			} else {
+				special++;
+			}
+		}
+		return new Statistics(lowercase,uppercase,digits,special).toString();
+	}
+
+}
+
+class Statistics {
+	private final int lowercase;
+	private final int uppercase;
+	private final int digits;
+	private final int special;
+
+	public Statistics(int lowercase, int uppercase, int digits, int special) {
+		this.lowercase = lowercase;
+		this.uppercase = uppercase;
+		this.digits = digits;
+		this.special = special;
+	}
+
+	@Override
+	public String toString() {
+		return "{" +
+				"\"lowercase: \"" + lowercase +
+				"\", uppercase: \"" + uppercase +
+				"\", digits: \"" + digits +
+				"\", special: \"" + special +
+				'}';
+	}
 }
