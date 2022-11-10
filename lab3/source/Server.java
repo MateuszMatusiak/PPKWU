@@ -1,6 +1,8 @@
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
@@ -18,13 +20,36 @@ public class Server {
 	static class MyHandler implements HttpHandler {
 		@Override
 		public void handle(HttpExchange t) throws IOException {
-			String response = "Hello World from java!\n";
+			String response = "";
+			if (t.getRequestURI().getQuery() != null && !t.getRequestURI().getQuery().isEmpty()) {
+				Map<String, String> params = queryToMap(t.getRequestURI().getQuery());
+				if(!params.isEmpty()) {
+					String text = params.get("str");
+					response = calculateString(text);
+				}
+			}
 			t.sendResponseHeaders(200, response.length());
 			OutputStream os = t.getResponseBody();
 			os.write(response.getBytes());
 			os.close();
 			System.out.println("Served hello world...");
 		}
+	}
+
+	public static Map<String, String> queryToMap(String query) {
+		if (query == null) {
+			return null;
+		}
+		Map<String, String> result = new HashMap<>();
+		for (String param : query.split("&")) {
+			String[] entry = param.split("=");
+			if (entry.length > 1) {
+				result.put(entry[0], entry[1]);
+			} else {
+				result.put(entry[0], "");
+			}
+		}
+		return result;
 	}
 
 	public static String calculateString(String text) {
@@ -34,18 +59,18 @@ public class Server {
 		int special = 0;
 
 		char[] arr = text.toCharArray();
-		for(char c : arr) {
-			if(Character.isLowerCase(c)){
+		for (char c : arr) {
+			if (Character.isLowerCase(c)) {
 				lowercase++;
-			}else if(Character.isUpperCase(c)){
+			} else if (Character.isUpperCase(c)) {
 				uppercase++;
-			}else if(Character.isDigit(c)){
+			} else if (Character.isDigit(c)) {
 				digits++;
 			} else {
 				special++;
 			}
 		}
-		return new Statistics(lowercase,uppercase,digits,special).toString();
+		return new Statistics(lowercase, uppercase, digits, special).toString();
 	}
 
 }
