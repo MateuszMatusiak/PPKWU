@@ -26,6 +26,7 @@ public class Server {
 				if (!params.isEmpty()) {
 					String str1 = params.get("num1");
 					String str2 = params.get("num2");
+					response = handleRequest(str1, str2);
 				}
 			}
 			t.sendResponseHeaders(200, response.length());
@@ -49,6 +50,21 @@ public class Server {
 			}
 		}
 		return result;
+	}
+
+	public static String handleRequest(String str1, String str2) {
+		try {
+			int num1, num2;
+			num1 = Integer.parseInt(str1);
+			num2 = Integer.parseInt(str2);
+			if(num2==0){
+				return "Cannot divide by 0";
+			}
+			MathResult m = new MathResult(num1, num2);
+			return m.toString();
+		} catch (NumberFormatException e) {
+			return "Not a number";
+		}
 	}
 }
 
