@@ -52,3 +52,38 @@ public class Server {
 	}
 }
 
+class MathResult {
+	private int sum;
+	private int sub;
+	private int mul;
+	private int div;
+	private int mod;
+
+	int num1;
+	int num2;
+
+	public MathResult(int num1, int num2) {
+		this.num1 = num1;
+		this.num2 = num2;
+		calculate();
+	}
+
+	private void calculate() {
+		sum = num1 + num2;
+		sub = num1 - num2;
+		mul = num1 * num2;
+		div = num1 / num2;
+		mod = num1 % num2;
+	}
+
+	@Override
+	public String toString() {
+		return "{" +
+				"\"sum : \"" + sum +
+				"\", sub : \"" + sub +
+				"\", mul : \"" + mul +
+				"\", div : \"" + div +
+				"\", mod : \"" + mod +
+				'}';
+	}
+}
