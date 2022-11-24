@@ -24,7 +24,8 @@ public class Server {
 			if (t.getRequestURI().getQuery() != null && !t.getRequestURI().getQuery().isEmpty()) {
 				Map<String, String> params = queryToMap(t.getRequestURI().getQuery());
 				if (!params.isEmpty()) {
-
+					String str1 = params.get("num1");
+					String str2 = params.get("num2");
 				}
 			}
 			t.sendResponseHeaders(200, response.length());
@@ -34,6 +35,20 @@ public class Server {
 		}
 	}
 
-
+	public static Map<String, String> queryToMap(String query) {
+		if (query == null) {
+			return null;
+		}
+		Map<String, String> result = new HashMap<>();
+		for (String param : query.split("&")) {
+			String[] entry = param.split("=");
+			if (entry.length > 1) {
+				result.put(entry[0], entry[1]);
+			} else {
+				result.put(entry[0], "");
+			}
+		}
+		return result;
+	}
 }
 
