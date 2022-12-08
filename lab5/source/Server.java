@@ -1,6 +1,9 @@
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -15,22 +18,24 @@ public class Server {
 	public static void main(String[] args) throws Exception {
 		HttpServer server = HttpServer.create(new InetSocketAddress(4080), 0);
 		server.createContext("/", new MyHandler());
-		server.setExecutor(null); // creates a default executor
+		server.setExecutor(null);
 		server.start();
 	}
 
 	static class MyHandler implements HttpHandler {
 		@Override
 		public void handle(HttpExchange t) throws IOException {
-			JSONObject response = new JSONObject();
-			if (t.getRequestURI().getQuery() != null && !t.getRequestURI().getQuery().isEmpty()) {
-				JSONObject params = queryToMap(t.getRequestURI().getQuery());
-				if (!params.isEmpty()) {
-					String str1 = params.getString("num1");
-					String str2 = params.getString("num2");
-					response = handleRequest(str1, str2);
-				}
+			BufferedReader httpInput = new BufferedReader(new InputStreamReader(
+					t.getRequestBody(), StandardCharsets.UTF_8));
+			StringBuilder in = new StringBuilder();
+			String input;
+			while ((input = httpInput.readLine()) != null) {
+				in.append(input).append(" ");
 			}
+
+			JSONObject inputJSON = new JSONObject(in.toString());
+			JSONObject response = handleRequest(inputJSON);
+
 			t.sendResponseHeaders(200, response.toString().length());
 			OutputStream os = t.getResponseBody();
 			os.write(response.toString().getBytes());
@@ -38,38 +43,32 @@ public class Server {
 		}
 	}
 
-	public static JSONObject queryToMap(String query) {
-		if (query == null) {
-			return null;
+	public static JSONObject handleRequest(JSONObject input) {
+		JSONObject result = new JSONObject();
+		try {
+			String txt = input.getString("str");
+			JSONObject str = calculateString(txt);
+			result.put("lowercase", str.get("lowercase"));
+			result.put("uppercase", str.get("uppercase"));
+			result.put("digits", str.get("digits"));
+			result.put("special", str.get("special"));
+		} catch (Exception e) {
+			//ignore
 		}
-
-
-		Map<String, String> map = new HashMap<>();
-		for (String param : query.split("&")) {
-			String[] entry = param.split("=");
-			if (entry.length > 1) {
-				map.put(entry[0], entry[1]);
-			} else {
-				map.put(entry[0], "");
-			}
-		}
-		return new JSONObject(map);
+		
+		return result;
 	}
 
-	public static JSONObject handleRequest(String str1, String str2) {
+
+	public static JSONObject handleMathRequest(int num1, int num2) {
 		try {
-			int num1, num2;
-			num1 = Integer.parseInt(str1);
-			num2 = Integer.parseInt(str2);
-			if (num2 == 0) {
-				return null;
-			}
 			MathResult m = new MathResult(num1, num2);
 			return m.toJSON();
 		} catch (NumberFormatException e) {
 			return null;
 		}
 	}
+
 
 	public static JSONObject calculateString(String text) {
 		int lowercase = 0;
@@ -115,16 +114,6 @@ class Statistics {
 		res.put("special", special);
 		return res;
 	}
-
-	@Override
-	public String toString() {
-		return "{" +
-				"\"lowercase: \"" + lowercase +
-				"\", uppercase: \"" + uppercase +
-				"\", digits: \"" + digits +
-				"\", special: \"" + special +
-				'}';
-	}
 }
 
 class MathResult {
@@ -151,7 +140,7 @@ class MathResult {
 		mod = num1 % num2;
 	}
 
-	public JSONObject toJSON(){
+	public JSONObject toJSON() {
 		JSONObject res = new JSONObject();
 		res.put("sum", sum);
 		res.put("sub", sub);
