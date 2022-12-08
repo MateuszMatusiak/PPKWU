@@ -31,8 +31,7 @@ public class Server {
 					response = handleRequest(str1, str2);
 				}
 			}
-			System.out.println(response.toString());
-			t.sendResponseHeaders(200, response.length());
+			t.sendResponseHeaders(200, response.toString().length());
 			OutputStream os = t.getResponseBody();
 			os.write(response.toString().getBytes());
 			os.close();
