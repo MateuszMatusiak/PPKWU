@@ -1,17 +1,14 @@
+import com.sun.net.httpserver.HttpExchange;
+import com.sun.net.httpserver.HttpHandler;
+import com.sun.net.httpserver.HttpServer;
+import org.json.JSONObject;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.json.*;
-
-import com.sun.net.httpserver.HttpExchange;
-import com.sun.net.httpserver.HttpHandler;
-import com.sun.net.httpserver.HttpServer;
 
 public class Server {
 
@@ -32,7 +29,6 @@ public class Server {
 			while ((input = httpInput.readLine()) != null) {
 				in.append(input).append(" ");
 			}
-
 			JSONObject inputJSON = new JSONObject(in.toString());
 			JSONObject response = handleRequest(inputJSON);
 
