@@ -4,6 +4,8 @@ import java.net.InetSocketAddress;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.json.*;
+
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
@@ -20,51 +22,109 @@ public class Server {
 	static class MyHandler implements HttpHandler {
 		@Override
 		public void handle(HttpExchange t) throws IOException {
-			String response = "";
+			JSONObject response = new JSONObject();
 			if (t.getRequestURI().getQuery() != null && !t.getRequestURI().getQuery().isEmpty()) {
-				Map<String, String> params = queryToMap(t.getRequestURI().getQuery());
+				JSONObject params = queryToMap(t.getRequestURI().getQuery());
 				if (!params.isEmpty()) {
-					String str1 = params.get("num1");
-					String str2 = params.get("num2");
+					String str1 = params.getString("num1");
+					String str2 = params.getString("num2");
 					response = handleRequest(str1, str2);
 				}
 			}
+			System.out.println(response.toString());
 			t.sendResponseHeaders(200, response.length());
 			OutputStream os = t.getResponseBody();
-			os.write(response.getBytes());
+			os.write(response.toString().getBytes());
 			os.close();
 		}
 	}
 
-	public static Map<String, String> queryToMap(String query) {
+	public static JSONObject queryToMap(String query) {
 		if (query == null) {
 			return null;
 		}
-		Map<String, String> result = new HashMap<>();
+
+
+		Map<String, String> map = new HashMap<>();
 		for (String param : query.split("&")) {
 			String[] entry = param.split("=");
 			if (entry.length > 1) {
-				result.put(entry[0], entry[1]);
+				map.put(entry[0], entry[1]);
 			} else {
-				result.put(entry[0], "");
+				map.put(entry[0], "");
 			}
 		}
-		return result;
+		return new JSONObject(map);
 	}
 
-	public static String handleRequest(String str1, String str2) {
+	public static JSONObject handleRequest(String str1, String str2) {
 		try {
 			int num1, num2;
 			num1 = Integer.parseInt(str1);
 			num2 = Integer.parseInt(str2);
-			if(num2==0){
-				return "Cannot divide by 0";
+			if (num2 == 0) {
+				return null;
 			}
 			MathResult m = new MathResult(num1, num2);
-			return m.toString();
+			return m.toJSON();
 		} catch (NumberFormatException e) {
-			return "Not a number";
+			return null;
 		}
+	}
+
+	public static JSONObject calculateString(String text) {
+		int lowercase = 0;
+		int uppercase = 0;
+		int digits = 0;
+		int special = 0;
+
+		char[] arr = text.toCharArray();
+		for (char c : arr) {
+			if (Character.isLowerCase(c)) {
+				lowercase++;
+			} else if (Character.isUpperCase(c)) {
+				uppercase++;
+			} else if (Character.isDigit(c)) {
+				digits++;
+			} else {
+				special++;
+			}
+		}
+		return new Statistics(lowercase, uppercase, digits, special).toJSON();
+	}
+
+}
+
+class Statistics {
+	private final int lowercase;
+	private final int uppercase;
+	private final int digits;
+	private final int special;
+
+	public Statistics(int lowercase, int uppercase, int digits, int special) {
+		this.lowercase = lowercase;
+		this.uppercase = uppercase;
+		this.digits = digits;
+		this.special = special;
+	}
+
+	public JSONObject toJSON() {
+		JSONObject res = new JSONObject();
+		res.put("lowercase", lowercase);
+		res.put("uppercase", uppercase);
+		res.put("digits", digits);
+		res.put("special", special);
+		return res;
+	}
+
+	@Override
+	public String toString() {
+		return "{" +
+				"\"lowercase: \"" + lowercase +
+				"\", uppercase: \"" + uppercase +
+				"\", digits: \"" + digits +
+				"\", special: \"" + special +
+				'}';
 	}
 }
 
@@ -90,6 +150,16 @@ class MathResult {
 		mul = num1 * num2;
 		div = num1 / num2;
 		mod = num1 % num2;
+	}
+
+	public JSONObject toJSON(){
+		JSONObject res = new JSONObject();
+		res.put("sum", sum);
+		res.put("sub", sub);
+		res.put("mul", mul);
+		res.put("div", div);
+		res.put("mod", mod);
+		return res;
 	}
 
 	@Override
