@@ -29,9 +29,7 @@ public class Server {
 			while ((input = httpInput.readLine()) != null) {
 				in.append(input).append(" ");
 			}
-			JSONObject inputJSON = new JSONObject(in.toString());
-			JSONObject response = handleRequest(inputJSON);
-
+			JSONObject response = handleRequest(new JSONObject(in.toString()));
 			t.sendResponseHeaders(200, response.toString().length());
 			OutputStream os = t.getResponseBody();
 			os.write(response.toString().getBytes());
