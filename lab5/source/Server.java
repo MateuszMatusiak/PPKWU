@@ -55,7 +55,19 @@ public class Server {
 		} catch (Exception e) {
 			//ignore
 		}
-		
+		try {
+			int num1 = input.getInt("num1");
+			int num2 = input.getInt("num2");
+
+			JSONObject mth = handleMathRequest(num1, num2);
+			result.put("sum", mth.get("sum"));
+			result.put("sub", mth.get("sub"));
+			result.put("mul", mth.get("mul"));
+			result.put("div", mth.get("div"));
+			result.put("mod", mth.get("mod"));
+		} catch (Exception e) {
+			//ignore
+		}
 		return result;
 	}
 
@@ -150,14 +162,4 @@ class MathResult {
 		return res;
 	}
 
-	@Override
-	public String toString() {
-		return "{" +
-				"\"sum : \"" + sum +
-				"\", sub : \"" + sub +
-				"\", mul : \"" + mul +
-				"\", div : \"" + div +
-				"\", mod : \"" + mod +
-				'}';
-	}
 }
