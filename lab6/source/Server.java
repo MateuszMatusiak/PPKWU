@@ -46,5 +46,64 @@ public class Server {
 		
 		return result;
 	}
+
+	class Statistics {
+		private final int lowercase;
+		private final int uppercase;
+		private final int digits;
+		private final int special;
+
+		public Statistics(int lowercase, int uppercase, int digits, int special) {
+			this.lowercase = lowercase;
+			this.uppercase = uppercase;
+			this.digits = digits;
+			this.special = special;
+		}
+
+		public JSONObject toJSON() {
+			JSONObject res = new JSONObject();
+			res.put("lowercase", lowercase);
+			res.put("uppercase", uppercase);
+			res.put("digits", digits);
+			res.put("special", special);
+			return res;
+		}
+	}
+
+	class MathResult {
+		private int sum;
+		private int sub;
+		private int mul;
+		private int div;
+		private int mod;
+
+		int num1;
+		int num2;
+
+		public MathResult(int num1, int num2) {
+			this.num1 = num1;
+			this.num2 = num2;
+			calculate();
+		}
+
+		private void calculate() {
+			sum = num1 + num2;
+			sub = num1 - num2;
+			mul = num1 * num2;
+			div = num1 / num2;
+			mod = num1 % num2;
+		}
+
+		public JSONObject toJSON() {
+			JSONObject res = new JSONObject();
+			res.put("sum", sum);
+			res.put("sub", sub);
+			res.put("mul", mul);
+			res.put("div", div);
+			res.put("mod", mod);
+			return res;
+		}
+
+	}
 }
 
