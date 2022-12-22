@@ -120,9 +120,3 @@ public class Server {
 	}
 }
 
-class InputData{
-	int num1;
-	int num2;
-	String str;
-}
-
