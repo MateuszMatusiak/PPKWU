@@ -68,15 +68,17 @@ public class Server {
 				s = calculateString(data.str);
 
 
-
 			t.sendResponseHeaders(200, 0);
-			OutputStream os = t.getResponseBody();
-			try {
-				writeXml(os, m, s);
+			try (OutputStream os = t.getResponseBody()) {
+				Document doc = writeXml(os, m, s);
+				TransformerFactory transformerFactory = TransformerFactory.newInstance();
+				Transformer transformer = transformerFactory.newTransformer();
+				DOMSource source = new DOMSource(doc);
+				StreamResult result = new StreamResult(os);
+				transformer.transform(source, result);
 			} catch (TransformerException | ParserConfigurationException e) {
 				throw new RuntimeException(e);
 			}
-			os.close();
 			stream.close();
 
 		}
@@ -110,7 +112,7 @@ public class Server {
 			return new Data(str);
 		}
 
-		private static void writeXml(OutputStream output, MathResult math, Statistics stats)
+		private static Document writeXml(OutputStream output, MathResult math, Statistics stats)
 				throws TransformerException, ParserConfigurationException {
 
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -143,14 +145,7 @@ public class Server {
 				doc.createElement("num1%num2");
 				rootElement.appendChild(doc.createElement(String.valueOf(math.mod)));
 			}
-
-			TransformerFactory transformerFactory = TransformerFactory.newInstance();
-			Transformer transformer = transformerFactory.newTransformer();
-			DOMSource source = new DOMSource(doc);
-			StreamResult result = new StreamResult(output);
-
-			transformer.transform(source, result);
-
+			return doc;
 		}
 
 
