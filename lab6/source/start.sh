@@ -1,2 +1,2 @@
 #!/bin/bash
-java -classpath "./json.jar" ./Server.java
+java -classpath "./jaxb.jar" ./Server.java
