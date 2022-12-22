@@ -1,10 +1,21 @@
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
@@ -22,29 +33,45 @@ public class Server {
 	static class MyHandler implements HttpHandler {
 		@Override
 		public void handle(HttpExchange t) throws IOException {
+			System.out.println("ZAŻARŁO");
 			BufferedReader httpInput = new BufferedReader(new InputStreamReader(
 					t.getRequestBody(), StandardCharsets.UTF_8));
 			StringBuilder in = new StringBuilder();
-			String input;
-			while ((input = httpInput.readLine()) != null) {
-				in.append(input).append(" ");
+			char[] charBuffer = new char[8 * 1024];
+			int numCharsRead;
+			while ((numCharsRead = httpInput.read(charBuffer, 0, charBuffer.length)) != -1) {
+				in.append(charBuffer, 0, numCharsRead);
 			}
-			JSONObject response = handleRequest(new JSONObject(in.toString()));
-			t.sendResponseHeaders(200, response.toString().length());
-			OutputStream os = t.getResponseBody();
-			os.write(response.toString().getBytes());
-			os.close();
+
+			InputStream stream = new ByteArrayInputStream(in.toString().getBytes(StandardCharsets.UTF_8));
+			try {
+				handleRequest(stream);
+			} catch (XPathExpressionException | ParserConfigurationException | SAXException e) {
+				throw new RuntimeException(e);
+			}
+
+			stream.close();
+//			t.sendResponseHeaders(200, response.toString().length());
+//			OutputStream os = t.getResponseBody();
+//			os.write(response.toString().getBytes());
+//			os.close();
+
 		}
 	}
 
-	public static JSONObject handleRequest(JSONObject input) {
-		JSONObject result = new JSONObject();
-		try {
-		} catch (Exception e) {
-			//ignore
-		}
-		
-		return result;
+	public static void handleRequest(InputStream stream) throws XPathExpressionException, ParserConfigurationException, IOException, SAXException {
+		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
+		documentBuilderFactory.setNamespaceAware(true);
+		DocumentBuilder builder = documentBuilderFactory.newDocumentBuilder();
+		Document doc = builder.parse(stream); //input stream of response.
+
+		XPathFactory xPathFactory = XPathFactory.newInstance();
+		XPath xpath = xPathFactory.newXPath();
+
+		XPathExpression expr = xpath.compile("//str"); // Look for status tag value.
+		String status =  expr.evaluate(doc);
+		System.out.println(status);
+
 	}
 
 	class Statistics {
@@ -60,14 +87,14 @@ public class Server {
 			this.special = special;
 		}
 
-		public JSONObject toJSON() {
-			JSONObject res = new JSONObject();
-			res.put("lowercase", lowercase);
-			res.put("uppercase", uppercase);
-			res.put("digits", digits);
-			res.put("special", special);
-			return res;
-		}
+//		public JSONObject toJSON() {
+//			JSONObject res = new JSONObject();
+//			res.put("lowercase", lowercase);
+//			res.put("uppercase", uppercase);
+//			res.put("digits", digits);
+//			res.put("special", special);
+//			return res;
+//		}
 	}
 
 	class MathResult {
@@ -94,16 +121,22 @@ public class Server {
 			mod = num1 % num2;
 		}
 
-		public JSONObject toJSON() {
-			JSONObject res = new JSONObject();
-			res.put("sum", sum);
-			res.put("sub", sub);
-			res.put("mul", mul);
-			res.put("div", div);
-			res.put("mod", mod);
-			return res;
-		}
+//		public JSONObject toJSON() {
+//			JSONObject res = new JSONObject();
+//			res.put("sum", sum);
+//			res.put("sub", sub);
+//			res.put("mul", mul);
+//			res.put("div", div);
+//			res.put("mod", mod);
+//			return res;
+//		}
 
 	}
+}
+
+class InputData{
+	int num1;
+	int num2;
+	String str;
 }
 
