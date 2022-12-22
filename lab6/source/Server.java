@@ -33,7 +33,6 @@ public class Server {
 	static class MyHandler implements HttpHandler {
 		@Override
 		public void handle(HttpExchange t) throws IOException {
-			System.out.println("ZAŻARŁO");
 			BufferedReader httpInput = new BufferedReader(new InputStreamReader(
 					t.getRequestBody(), StandardCharsets.UTF_8));
 			StringBuilder in = new StringBuilder();
@@ -69,9 +68,15 @@ public class Server {
 		XPath xpath = xPathFactory.newXPath();
 
 		XPathExpression expr = xpath.compile("//str"); // Look for status tag value.
-		String status =  expr.evaluate(doc);
-		System.out.println(status);
+		String str =  expr.evaluate(doc);
 
+		XPathExpression expr1 = xpath.compile("//num1"); // Look for status tag value.
+		int num1 = Integer.parseInt(expr1.evaluate(doc));
+
+		XPathExpression expr2 = xpath.compile("//num2"); // Look for status tag value.
+		int num2 = Integer.parseInt(expr2.evaluate(doc));
+
+		System.out.println(str + num1 + num2);
 	}
 
 	class Statistics {
@@ -87,14 +92,6 @@ public class Server {
 			this.special = special;
 		}
 
-//		public JSONObject toJSON() {
-//			JSONObject res = new JSONObject();
-//			res.put("lowercase", lowercase);
-//			res.put("uppercase", uppercase);
-//			res.put("digits", digits);
-//			res.put("special", special);
-//			return res;
-//		}
 	}
 
 	class MathResult {
@@ -120,17 +117,6 @@ public class Server {
 			div = num1 / num2;
 			mod = num1 % num2;
 		}
-
-//		public JSONObject toJSON() {
-//			JSONObject res = new JSONObject();
-//			res.put("sum", sum);
-//			res.put("sub", sub);
-//			res.put("mul", mul);
-//			res.put("div", div);
-//			res.put("mod", mod);
-//			return res;
-//		}
-
 	}
 }
 
