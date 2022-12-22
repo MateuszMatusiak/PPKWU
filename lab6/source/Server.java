@@ -18,8 +18,10 @@ import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -58,17 +60,27 @@ public class Server {
 				throw new RuntimeException(e);
 			}
 
-			MathResult m = new MathResult(data.num1, data.num2);
-			Statistics s = calculateString(data.str);
+			MathResult m = null;
+			Statistics s = null;
+			if (data.isMath)
+				m = new MathResult(data.num1, data.num2);
+			if (data.isString)
+				s = calculateString(data.str);
 
-			
+
+
+			t.sendResponseHeaders(200, 0);
+			OutputStream os = t.getResponseBody();
+			try {
+				writeXml(os, m, s);
+			} catch (TransformerException | ParserConfigurationException e) {
+				throw new RuntimeException(e);
+			}
+			os.close();
 			stream.close();
-//			t.sendResponseHeaders(200, response.toString().length());
-//			OutputStream os = t.getResponseBody();
-//			os.write(response.toString().getBytes());
-//			os.close();
 
 		}
+
 		public Data handleRequest(InputStream stream) throws XPathExpressionException, ParserConfigurationException, IOException, SAXException {
 			DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 			documentBuilderFactory.setNamespaceAware(true);
@@ -82,16 +94,23 @@ public class Server {
 			String str = expr.evaluate(doc);
 
 			XPathExpression expr1 = xpath.compile("//num1"); // Look for status tag value.
-			int num1 = Integer.parseInt(expr1.evaluate(doc));
-
 			XPathExpression expr2 = xpath.compile("//num2"); // Look for status tag value.
-			int num2 = Integer.parseInt(expr2.evaluate(doc));
-
-			return new Data(num1, num2, str);
-
+			int num1;
+			int num2;
+			try {
+				num1 = Integer.parseInt(expr1.evaluate(doc));
+				num2 = Integer.parseInt(expr2.evaluate(doc));
+				if (!str.isEmpty())
+					return new Data(num1, num2, str);
+				else
+					return new Data(num1, num2);
+			} catch (Exception e) {
+				//ignore
+			}
+			return new Data(str);
 		}
 
-		private static void writeXml(OutputStream output, MathResult math)
+		private static void writeXml(OutputStream output, MathResult math, Statistics stats)
 				throws TransformerException, ParserConfigurationException {
 
 			DocumentBuilderFactory docFactory = DocumentBuilderFactory.newInstance();
@@ -101,16 +120,29 @@ public class Server {
 			Element rootElement = doc.createElement("root");
 			doc.appendChild(rootElement);
 
-			doc.createElement("num1+num2");
-			rootElement.appendChild(doc.createElement(String.valueOf(math.sum)));
-			doc.createElement("num1-num2");
-			rootElement.appendChild(doc.createElement(String.valueOf(math.sub)));
-			doc.createElement("num1*num2");
-			rootElement.appendChild(doc.createElement(String.valueOf(math.mul)));
-			doc.createElement("num1/num2");
-			rootElement.appendChild(doc.createElement(String.valueOf(math.div)));
-			doc.createElement("num1%num2");
-			rootElement.appendChild(doc.createElement(String.valueOf(math.mod)));
+			if (stats != null) {
+				doc.createElement("lowercase");
+				rootElement.appendChild(doc.createElement(String.valueOf(stats.lowercase)));
+				doc.createElement("uppercase");
+				rootElement.appendChild(doc.createElement(String.valueOf(stats.uppercase)));
+				doc.createElement("digits");
+				rootElement.appendChild(doc.createElement(String.valueOf(stats.digits)));
+				doc.createElement("special");
+				rootElement.appendChild(doc.createElement(String.valueOf(stats.special)));
+			}
+
+			if (math != null) {
+				doc.createElement("num1+num2");
+				rootElement.appendChild(doc.createElement(String.valueOf(math.sum)));
+				doc.createElement("num1-num2");
+				rootElement.appendChild(doc.createElement(String.valueOf(math.sub)));
+				doc.createElement("num1*num2");
+				rootElement.appendChild(doc.createElement(String.valueOf(math.mul)));
+				doc.createElement("num1/num2");
+				rootElement.appendChild(doc.createElement(String.valueOf(math.div)));
+				doc.createElement("num1%num2");
+				rootElement.appendChild(doc.createElement(String.valueOf(math.mod)));
+			}
 
 			TransformerFactory transformerFactory = TransformerFactory.newInstance();
 			Transformer transformer = transformerFactory.newTransformer();
@@ -182,15 +214,41 @@ public class Server {
 				mod = num1 % num2;
 			}
 		}
-		class Data{
+
+		class Data {
 			int num1;
 			int num2;
 			String str;
+
+			boolean isMath = false;
+			boolean isString = false;
 
 			public Data(int num1, int num2, String str) {
 				this.num1 = num1;
 				this.num2 = num2;
 				this.str = str;
+				isMath = true;
+				isString = true;
+			}
+
+			public Data(String str) {
+				this.str = str;
+				isString = true;
+			}
+
+			public Data(int num1, int num2) {
+				this.num1 = num1;
+				this.num2 = num2;
+				isMath = true;
+			}
+
+			@Override
+			public String toString() {
+				return "Data{" +
+						"num1=" + num1 +
+						", num2=" + num2 +
+						", str='" + str + '\'' +
+						'}';
 			}
 		}
 	}
